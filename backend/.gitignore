@@ -1,0 +1,17 @@
+node_modules/
+
+# allow committing env files per request
+# (not ignoring .env and variants)
+
+logs/
+*.log
+npm-debug.log*
+
+.DS_Store
+.vscode/
+.idea/
+
+# do not commit runtime uploads
+uploads/
+dist/
+build/
