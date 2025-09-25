@@ -18,11 +18,11 @@ export type NavItem = {
 
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
+  { label: 'Benim İş Emirlerim', path: '/my/work-orders', icon: <AssignmentIndIcon />, permission: ['viewWorkOrders', 'viewMyWorkOrders'] },
+  { label: 'Benim Muayenelerim', path: '/my/inspections', icon: <ChecklistIcon />, permission: ['viewInspections', 'viewMyInspections'] },
   { label: 'Teklifler', path: '/offers', icon: <RequestQuoteIcon />, permission: 'viewOffers' },
   { label: 'İş Emirleri', path: '/work-orders', icon: <AssignmentIcon />, permission: 'viewWorkOrders' },
-  { label: 'Benim İş Emirlerim', path: '/my/work-orders', icon: <AssignmentIndIcon />, permission: ['viewWorkOrders', 'viewMyWorkOrders'] },
   { label: 'Muayeneler', path: '/inspections', icon: <FactCheckIcon />, permission: 'viewInspections' },
-  { label: 'Benim Muayenelerim', path: '/my/inspections', icon: <ChecklistIcon />, permission: ['viewInspections', 'viewMyInspections'] },
   { label: 'Müşteriler', path: '/customers', icon: <PeopleIcon />, permission: 'viewCustomers' },
   { label: 'Ekipmanlar', path: '/equipment', icon: <Inventory2Icon />, permission: 'viewEquipment' },
   { label: 'Teknisyenler', path: '/technicians', icon: <GroupIcon />, permission: 'viewTechnicians' },
