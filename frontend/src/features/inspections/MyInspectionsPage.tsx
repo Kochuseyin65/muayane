@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react'
-import { Box, Button, Chip, MenuItem, Stack, TextField, Tooltip } from '@mui/material'
+import { Box, Button, Chip, MenuItem, Stack, TextField } from '@mui/material'
 import CachedIcon from '@mui/icons-material/Cached'
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import DataTable from '@/components/common/DataTable'
 import PageHeader from '@/components/layout/PageHeader'
 import { useListInspectionsQuery } from './inspectionsApi'
 import { formatDate } from '@/utils/date'
+import InspectionActionsMenu from './components/InspectionActionsMenu'
 
 const statusColor: Record<string, 'default' | 'info' | 'success' | 'warning' | 'error'> = {
   not_started: 'default',
@@ -34,7 +34,11 @@ export default function MyInspectionsPage() {
   const total = data?.data?.pagination?.totalCount || 0
 
   const columns = [
-    { id: 'inspection_number', label: 'Muayene No', render: (r: any) => <strong>{r.inspection_number || '-'}</strong> },
+    { id: 'inspection_number', label: 'Muayene No', render: (r: any) => (
+      <Button size="small" onClick={() => (window.location.href = `/inspections/${r.id}`)}>
+        {r.inspection_number || '-'}
+      </Button>
+    ) },
     { id: 'work_order_number', label: 'İş Emri' },
     { id: 'customer_name', label: 'Müşteri' },
     { id: 'equipment_name', label: 'Ekipman' },
@@ -46,18 +50,7 @@ export default function MyInspectionsPage() {
 
   const withActions = rows.map((row) => ({
     ...row,
-    actions: (
-      <Tooltip title="Detayı aç">
-        <Button
-          size="small"
-          variant="outlined"
-          endIcon={<ArrowForwardIcon fontSize="small" />}
-          onClick={() => (window.location.href = `/inspections/${row.id}`)}
-        >
-          Görüntüle
-        </Button>
-      </Tooltip>
-    ),
+    actions: <InspectionActionsMenu inspectionId={row.id} status={row.status} />,
   }))
 
   return (
@@ -72,6 +65,7 @@ export default function MyInspectionsPage() {
         totalCount={total}
         onPageChange={setPage}
         onRowsPerPageChange={setLimit}
+        actionsColumnPosition="left"
         actionsHeader={(
           <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
             <TextField

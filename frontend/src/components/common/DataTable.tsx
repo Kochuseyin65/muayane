@@ -20,6 +20,7 @@ interface Props<T> {
   search?: string
   onSearchChange?: (value: string) => void
   actionsHeader?: ReactNode
+  actionsColumnPosition?: 'left' | 'right'
 }
 
 export default function DataTable<T extends { id: number | string }>({
@@ -34,7 +35,12 @@ export default function DataTable<T extends { id: number | string }>({
   search,
   onSearchChange,
   actionsHeader,
+  actionsColumnPosition = 'right',
 }: Props<T>) {
+  const hasLeftActions = actionsColumnPosition === 'left'
+  const hasRightActions = actionsColumnPosition === 'right'
+  const totalColumnCount = columns.length + (hasLeftActions ? 1 : 0) + (hasRightActions ? 1 : 0)
+
   return (
     <Paper>
       <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" sx={{ p: 2 }}>
@@ -53,32 +59,38 @@ export default function DataTable<T extends { id: number | string }>({
         <Table stickyHeader size="small">
           <TableHead>
             <TableRow>
+              {hasLeftActions && <TableCell align="center" padding="checkbox" sx={{ width: 48 }}></TableCell>}
               {columns.map((c) => (
                 <TableCell key={String(c.id)} style={{ minWidth: c.minWidth }}>{c.label}</TableCell>
               ))}
-              <TableCell align="right">Aksiyonlar</TableCell>
+              {hasRightActions && <TableCell align="right">Aksiyonlar</TableCell>}
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={columns.length + 1}>
+                <TableCell colSpan={totalColumnCount}>
                   <Box display="flex" justifyContent="center" py={4}><CircularProgress size={24} /></Box>
                 </TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length + 1}>Kayıt bulunamadı</TableCell>
+                <TableCell colSpan={totalColumnCount}>Kayıt bulunamadı</TableCell>
               </TableRow>
             ) : (
               rows.map((row) => (
                 <TableRow hover key={String(row.id)}>
+                  {hasLeftActions && (
+                    <TableCell align="center" padding="checkbox" sx={{ width: 48 }}>{(row as any).actions}</TableCell>
+                  )}
                   {columns.map((c) => (
                     <TableCell key={String(c.id)}>
                       {c.render ? c.render(row) : (row as any)[c.id as any]}
                     </TableCell>
                   ))}
-                  <TableCell align="right">{(row as any).actions}</TableCell>
+                  {hasRightActions && (
+                    <TableCell align="right">{(row as any).actions}</TableCell>
+                  )}
                 </TableRow>
               ))
             )}
@@ -97,4 +109,3 @@ export default function DataTable<T extends { id: number | string }>({
     </Paper>
   )
 }
-

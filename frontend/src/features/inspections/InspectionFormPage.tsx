@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Box, Button, MenuItem, Paper, Stack, TextField, Typography } from '@mui/material'
 import PageHeader from '@/components/layout/PageHeader'
 import { useGetInspectionQuery } from './inspectionsApi'
@@ -12,6 +12,7 @@ export default function InspectionFormPage() {
   const { data, refetch } = useGetInspectionQuery(inspectionId)
   const ins = data?.data as any
   const { success, error } = useToast()
+  const navigate = useNavigate()
   const [values, setValues] = useState<Record<string, any>>({})
   const [date, setDate] = useState('')
   const [start, setStart] = useState('')
@@ -72,6 +73,7 @@ export default function InspectionFormPage() {
       }
       success('Kaydedildi')
       refetch()
+      navigate('/my/inspections')
     } catch (e: any) {
       console.error(e)
       error(e?.message || 'Kaydetme başarısız')

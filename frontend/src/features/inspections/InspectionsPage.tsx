@@ -4,6 +4,7 @@ import DataTable from '@/components/common/DataTable'
 import PageHeader from '@/components/layout/PageHeader'
 import { useListInspectionsQuery } from './inspectionsApi'
 import { formatDate } from '@/utils/date'
+import InspectionActionsMenu from './components/InspectionActionsMenu'
 
 const statusColor: Record<string, 'default' | 'info' | 'success' | 'warning' | 'error'> = {
   not_started: 'default',
@@ -39,6 +40,10 @@ export default function InspectionsPage() {
   ]
 
   const filtered = search ? rows.filter((r) => `${r.work_order_number} ${r.customer_name} ${r.equipment_name} ${r.technician_name} ${r.technician_surname}`.toLowerCase().includes(search.toLowerCase())) : rows
+  const withActions = filtered.map((row) => ({
+    ...row,
+    actions: <InspectionActionsMenu inspectionId={row.id} status={row.status} />,
+  }))
 
   return (
     <Box>
@@ -56,13 +61,14 @@ export default function InspectionsPage() {
       </PageHeader>
       <DataTable
         columns={columns as any}
-        rows={filtered}
+        rows={withActions}
         loading={isFetching}
         page={page}
         rowsPerPage={limit}
         totalCount={total}
         onPageChange={setPage}
         onRowsPerPageChange={setLimit}
+        actionsColumnPosition="left"
       />
     </Box>
   )
