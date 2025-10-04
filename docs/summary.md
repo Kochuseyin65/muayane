@@ -18,6 +18,8 @@ Bu belge, gerçekleştirilen işleri (faz bazlı) ve önerilen sonraki adımlar�
   - Inline PDF önizleme (InspectionReportPage) ve public `/reports/public/:token` sayfası, tek buton indirme + yenileme.
   - PDF alt bilgisinde token yerine public doğrulama linkine yönlenen gerçek QR görseli bulunur.
 - Teknisyen odaklı sayfalar: “Benim İş Emirlerim” ve “Benim Muayenelerim” menüye eklendi; backend `mine=true` filtresi ile yalnızca oturumdaki teknisyene atanan kayıtlar listelenir, frontend’de ilgili menüler `viewMyWorkOrders` / `viewMyInspections` izinleri ile açılır.
+- İş emri zamanlaması: `scheduled_date` alanı `opening_date`, `task_start_date`, `task_end_date` üçlüsü ile değiştirildi; UI/REST katmanı bu tarihleri gösterir ve bitiş ≥ başlangıç kuralı backend’de doğrulanır.
+- Work order dialogları müşteri listesini bekleyip ilk seçeneği otomatik atayacak şekilde güncellendi; böylece boş değer kaynaklı MUI select uyarıları ve yeniden render döngüsü yaşanmıyor.
 
 ## Sıradaki Öneriler (Faz 5+)
 - Dashboard kartları (açık teklifler, yaklaşan iş emirleri, bekleyen rapor/imza)

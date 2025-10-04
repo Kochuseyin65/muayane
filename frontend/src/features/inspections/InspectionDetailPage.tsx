@@ -36,6 +36,9 @@ export default function InspectionDetailPage() {
             <Paper sx={{ p: 2 }}>
               <Typography variant="subtitle1" fontWeight={700} gutterBottom>Bilgiler</Typography>
               <InfoRow label="İş Emri" value={ins.work_order_number} />
+              <InfoRow label="İş Emri Açılış" value={ins.work_order_opening_date ? formatDate(ins.work_order_opening_date) : '-'} />
+              <InfoRow label="Görev Başlangıç" value={ins.work_order_task_start_date ? formatDate(ins.work_order_task_start_date) : '-'} />
+              <InfoRow label="Görev Bitiş" value={ins.work_order_task_end_date ? formatDate(ins.work_order_task_end_date) : '-'} />
               <InfoRow label="Müşteri" value={ins.customer_name} />
               <InfoRow label="Tarih" value={ins.inspection_date ? formatDate(ins.inspection_date) : '-'} />
               <InfoRow label="Saat" value={ins.start_time ? `${ins.start_time}${ins.end_time? ' - '+ins.end_time: ''}` : '-'} />

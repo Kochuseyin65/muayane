@@ -242,7 +242,15 @@ class BackendTester:
             # Pick a future date unlikely to collide with existing 09:00-17:00 slots
             base = now_ts()
             future_ts = base + 86400 * ((base % 90) + 1)  # 1..90 days ahead
-            body = {"scheduledDate": time.strftime("%Y-%m-%d", time.gmtime(future_ts)), "notes": "Tekliften"}
+            opening = time.strftime("%Y-%m-%d", time.gmtime(base))
+            start = time.strftime("%Y-%m-%d", time.gmtime(future_ts))
+            end = time.strftime("%Y-%m-%d", time.gmtime(future_ts + 86400))
+            body = {
+                "openingDate": opening,
+                "taskStartDate": start,
+                "taskEndDate": end,
+                "notes": "Tekliften"
+            }
             r = self._post(f"/offers/{self.offer_id}/convert-to-work-order", body, token=self.token_admin)
             ok = self._ok(r)
             if ok:

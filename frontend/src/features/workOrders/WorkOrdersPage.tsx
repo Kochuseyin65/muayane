@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, MenuItem, Stack, TextField } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import EditIcon from '@mui/icons-material/Edit'
@@ -57,11 +57,13 @@ export default function WorkOrdersPage() {
 
   const columns = [
     { id: 'work_order_number', label: 'İş Emri No', render: (r: any) => <Button size="small" onClick={() => navigate(`/work-orders/${r.id}`)}>{r.work_order_number}</Button> },
-    { id: 'customer_name', label: 'Müşteri' },
+    { id: 'customer_name', label: 'Firma' },
     { id: 'status', label: 'Durum', render: (r: any) => <Chip label={r.status} color={statusColor[r.status] || 'default'} size="small" /> },
     { id: 'inspection_count', label: 'Muayene', render: (r: any) => `${r.completed_inspections || 0}/${r.inspection_count || 0}` },
-    { id: 'scheduled_date', label: 'Plan', render: (r: any) => r.scheduled_date ? formatDate(r.scheduled_date) : '-' },
-    { id: 'created_at', label: 'Oluşturulma', render: (r: any) => formatDateTime(r.created_at) },
+    { id: 'opening_date', label: 'Açılış Tarihi', render: (r: any) => r.opening_date ? formatDate(r.opening_date) : '-' },
+    { id: 'task_start_date', label: 'Görev Başlangıç', render: (r: any) => r.task_start_date ? formatDate(r.task_start_date) : '-' },
+    { id: 'task_end_date', label: 'Görev Bitiş', render: (r: any) => r.task_end_date ? formatDate(r.task_end_date) : '-' },
+    // { id: 'created_at', label: 'Oluşturulma', render: (r: any) => formatDateTime(r.created_at) },
   ]
 
   const withActions = rows.map((r) => ({
@@ -99,7 +101,7 @@ export default function WorkOrdersPage() {
           </PermissionGuard>
         }
       >
-        <TextField size="small" placeholder="Durum" select value={status} onChange={(e) => setStatus(e.target.value)}>
+        <TextField size="small" label="Durum" placeholder="Durum" select value={status} onChange={(e) => setStatus(e.target.value)}>
           <MenuItem value="">Tümü</MenuItem>
           {['not_started','in_progress','completed','approved','sent'].map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
         </TextField>
@@ -136,7 +138,7 @@ export default function WorkOrdersPage() {
   )
 }
 
-function WorkOrderDialog({ open, onClose, onSave, workOrder }: { open: boolean; onClose: () => void; onSave: (values: { customerCompanyId: number; assignedTechnicians?: number[]; scheduledDate?: string; equipmentIds?: number[]; notes?: string }) => void; workOrder?: WorkOrder }) {
+function WorkOrderDialog({ open, onClose, onSave, workOrder }: { open: boolean; onClose: () => void; onSave: (values: { customerCompanyId: number; assignedTechnicians?: number[]; openingDate?: string; taskStartDate?: string; taskEndDate?: string; equipmentIds?: number[]; notes?: string }) => void; workOrder?: WorkOrder }) {
   const { data: customersData } = useListCustomersQuery({ page: 1, limit: 1000 }, { refetchOnMountOrArgChange: false })
   const { data: equipmentData } = useListEquipmentQuery({ page: 1, limit: 1000 }, { refetchOnMountOrArgChange: false })
   const { data: techData } = useListTechniciansQuery()
@@ -144,15 +146,59 @@ function WorkOrderDialog({ open, onClose, onSave, workOrder }: { open: boolean; 
   const equipment = equipmentData?.data?.equipment || []
   const techs = techData?.data || []
 
-  const [customerCompanyId, setCustomerCompanyId] = useState<number>(workOrder?.customer_company_id || (customers[0]?.id || 0))
+  const [customerCompanyId, setCustomerCompanyId] = useState<number | ''>(workOrder?.customer_company_id ?? '')
   const [assignedTechnicians, setAssignedTechnicians] = useState<number[]>(workOrder?.assignedTechnicians?.map(t => t.id) || [])
   const [equipmentIds, setEquipmentIds] = useState<number[]>([])
-  const [scheduledDate, setScheduledDate] = useState<string>(workOrder?.scheduled_date?.slice(0,10) || '')
+  const today = useMemo(() => new Date().toISOString().slice(0, 10), [])
+  const [openingDate, setOpeningDate] = useState<string>(workOrder?.opening_date?.slice(0,10) || today)
+  const [taskStartDate, setTaskStartDate] = useState<string>(workOrder?.task_start_date?.slice(0,10) || '')
+  const [taskEndDate, setTaskEndDate] = useState<string>(workOrder?.task_end_date?.slice(0,10) || '')
   const [notes, setNotes] = useState<string>(workOrder?.notes || '')
+
+  const resetForm = useCallback(() => {
+    setCustomerCompanyId('')
+    setAssignedTechnicians([])
+    setEquipmentIds([])
+    setOpeningDate(today)
+    setTaskStartDate('')
+    setTaskEndDate('')
+    setNotes('')
+  }, [today])
+
+  useEffect(() => {
+    if (!open) return;
+    if (workOrder) {
+      setCustomerCompanyId(workOrder.customer_company_id)
+      setAssignedTechnicians(workOrder.assignedTechnicians?.map(t => t.id) || [])
+      setOpeningDate(workOrder.opening_date?.slice(0,10) || today)
+      setTaskStartDate(workOrder.task_start_date?.slice(0,10) || '')
+      setTaskEndDate(workOrder.task_end_date?.slice(0,10) || '')
+      setNotes(workOrder.notes || '')
+      setEquipmentIds([])
+    } else {
+      resetForm()
+    }
+  }, [open, workOrder, today, resetForm])
+
+  useEffect(() => {
+    if (!open) return;
+    if (workOrder) return;
+    if (customers.length > 0 && customerCompanyId === '') {
+      setCustomerCompanyId(customers[0].id)
+    }
+  }, [open, workOrder, customers, customerCompanyId])
 
   const submit = () => {
     if (!customerCompanyId) return
-    onSave({ customerCompanyId, assignedTechnicians: assignedTechnicians.length? assignedTechnicians: undefined, scheduledDate: scheduledDate || undefined, equipmentIds: equipmentIds.length? equipmentIds: undefined, notes: notes || undefined })
+    onSave({
+      customerCompanyId: Number(customerCompanyId),
+      assignedTechnicians: assignedTechnicians.length ? assignedTechnicians : undefined,
+      openingDate: openingDate || undefined,
+      taskStartDate: taskStartDate || undefined,
+      taskEndDate: taskEndDate || undefined,
+      equipmentIds: equipmentIds.length ? equipmentIds : undefined,
+      notes: notes || undefined,
+    })
   }
 
   return (
@@ -160,8 +206,18 @@ function WorkOrderDialog({ open, onClose, onSave, workOrder }: { open: boolean; 
       <DialogTitle>{workOrder ? 'İş Emri Düzenle' : 'Yeni İş Emri'}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
-          <TextField select label="Müşteri" value={customerCompanyId} onChange={(e) => setCustomerCompanyId(Number(e.target.value))}>
+          <TextField
+            select
+            label="Müşteri"
+            value={customerCompanyId}
+            onChange={(e) => {
+              const value = e.target.value;
+              setCustomerCompanyId(value === '' ? '' : Number(value));
+            }}
+            SelectProps={{ displayEmpty: true }}
+          >
             {customers.map((c: any) => <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>)}
+            {customers.length === 0 && <MenuItem value="" disabled>Kayıt bulunmuyor</MenuItem>}
           </TextField>
           <TextField select SelectProps={{ multiple: true }} label="Teknisyenler" value={assignedTechnicians} onChange={(e) => setAssignedTechnicians((e.target.value as unknown as number[]))}>
             {techs.map((t: any) => <MenuItem key={t.id} value={t.id}>{t.name} {t.surname}</MenuItem>)}
@@ -169,7 +225,9 @@ function WorkOrderDialog({ open, onClose, onSave, workOrder }: { open: boolean; 
           <TextField select SelectProps={{ multiple: true }} label="Ekipmanlar (Muayene oluşturur)" value={equipmentIds} onChange={(e) => setEquipmentIds((e.target.value as unknown as number[]))}>
             {equipment.map((eq: any) => <MenuItem key={eq.id} value={eq.id}>{eq.name} ({eq.type})</MenuItem>)}
           </TextField>
-          <TextField type="date" label="Planlanan Tarih" InputLabelProps={{ shrink: true }} value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)} />
+          <TextField type="date" label="Açılış Tarihi" InputLabelProps={{ shrink: true }} value={openingDate} onChange={(e) => setOpeningDate(e.target.value)} />
+          <TextField type="date" label="Görev Başlangıç Tarihi" InputLabelProps={{ shrink: true }} value={taskStartDate} onChange={(e) => setTaskStartDate(e.target.value)} />
+          <TextField type="date" label="Görev Bitiş Tarihi" InputLabelProps={{ shrink: true }} value={taskEndDate} onChange={(e) => setTaskEndDate(e.target.value)} />
           <TextField label="Notlar" value={notes} onChange={(e) => setNotes(e.target.value)} multiline minRows={3} />
         </Stack>
       </DialogContent>

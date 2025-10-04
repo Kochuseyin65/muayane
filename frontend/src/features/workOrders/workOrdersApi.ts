@@ -6,7 +6,9 @@ export interface WorkOrder {
   customer_company_id: number
   customer_name: string
   status: 'not_started' | 'in_progress' | 'completed' | 'approved' | 'sent'
-  scheduled_date?: string
+  opening_date: string
+  task_start_date?: string
+  task_end_date?: string
   notes?: string
   offer_id?: number
   offer_number?: string
@@ -39,11 +41,11 @@ export const workOrdersApi = baseApi.injectEndpoints({
       query: (id) => ({ url: `/work-orders/${id}` }),
       providesTags: (_r, _e, id) => [{ type: 'WorkOrders', id }],
     }),
-    createWorkOrder: b.mutation<{ success: boolean; data: WorkOrder }, { customerCompanyId: number; assignedTechnicians?: number[]; scheduledDate?: string; equipmentIds?: number[]; notes?: string }>({
+    createWorkOrder: b.mutation<{ success: boolean; data: WorkOrder }, { customerCompanyId: number; assignedTechnicians?: number[]; openingDate?: string; taskStartDate?: string; taskEndDate?: string; equipmentIds?: number[]; notes?: string }>({
       query: (body) => ({ url: '/work-orders', method: 'POST', body }),
       invalidatesTags: [{ type: 'WorkOrders', id: 'LIST' }],
     }),
-    updateWorkOrder: b.mutation<{ success: boolean; data: WorkOrder }, { id: number; body: { customerCompanyId?: number; scheduledDate?: string; notes?: string } }>({
+    updateWorkOrder: b.mutation<{ success: boolean; data: WorkOrder }, { id: number; body: { customerCompanyId?: number; openingDate?: string; taskStartDate?: string; taskEndDate?: string; notes?: string } }>({
       query: ({ id, body }) => ({ url: `/work-orders/${id}`, method: 'PUT', body }),
       invalidatesTags: (_r, _e, { id }) => [{ type: 'WorkOrders', id }, { type: 'WorkOrders', id: 'LIST' }],
     }),
@@ -63,4 +65,3 @@ export const workOrdersApi = baseApi.injectEndpoints({
 })
 
 export const { useListWorkOrdersQuery, useLazyListWorkOrdersQuery, useGetWorkOrderQuery, useCreateWorkOrderMutation, useUpdateWorkOrderMutation, useAssignTechniciansMutation, useUpdateStatusMutation, useDeleteWorkOrderMutation } = workOrdersApi
-

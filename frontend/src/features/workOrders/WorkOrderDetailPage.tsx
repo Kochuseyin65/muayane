@@ -31,7 +31,7 @@ export default function WorkOrderDetailPage() {
     <Box>
       <PageHeader
         title={`İş Emri ${wo?.work_order_number || ''}`}
-        subtitle={wo && `${wo.customer_name} • ${wo.scheduled_date? formatDate(wo.scheduled_date): 'Planlanmamış'} • ${formatDateTime(wo.created_at)}`}
+        subtitle={wo && `${wo.customer_name} • Açılış: ${wo.opening_date ? formatDate(wo.opening_date) : '-'} • ${formatDateTime(wo.created_at)}`}
         actions={
           <Stack direction="row" spacing={1}>
             <Chip label={wo?.status} color={wo? (statusColor[wo.status] || 'default') : 'default'} size="small" />
@@ -90,8 +90,10 @@ export default function WorkOrderDetailPage() {
               </PermissionGuard>
             </Paper>
             <Paper sx={{ p: 2 }}>
-              <Typography variant="subtitle1" fontWeight={700} gutterBottom>Plan / Notlar</Typography>
-              <Typography variant="body2" color="text.secondary">Planlanan Tarih: {wo.scheduled_date ? formatDate(wo.scheduled_date) : '-'}</Typography>
+              <Typography variant="subtitle1" fontWeight={700} gutterBottom>Tarihler</Typography>
+              <InfoRow label="Açılış Tarihi" value={wo.opening_date ? formatDate(wo.opening_date) : '-'} />
+              <InfoRow label="Görev Başlangıç" value={wo.task_start_date ? formatDate(wo.task_start_date) : '-'} />
+              <InfoRow label="Görev Bitiş" value={wo.task_end_date ? formatDate(wo.task_end_date) : '-'} />
               {wo.notes && <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>{wo.notes}</Typography>}
             </Paper>
             <Paper sx={{ p: 2, mt: 2 }}>

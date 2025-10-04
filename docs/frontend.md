@@ -47,8 +47,8 @@ frontend/
 - Customers, Equipment, Technicians: CRUD listeleri, arama/sayfalama, dialog formlar, izinli aksiyonlar
   - Technicians izin dialogunda `viewMyWorkOrders`, `viewMyInspections` gibi teknisyen-odaklı izinler atanarak menüde “Benim …” sayfaları aktif edilir.
 - Equipment: görsel Template Builder ile şablon düzenleme (JSON’suz)
-- Offers: liste/detay, approve/send/convert, durum rozetleri
-- Work Orders: liste/detay, assign/status, inspections özetleri
+- Offers: liste/detay, approve/send/convert, durum rozetleri; convert dialog açılış/görev tarihleri talep eder.
+- Work Orders: liste/detay, assign/status, inspections özetleri; açılış/görev başlangıç-bitiş tarihleri tablo ve detayda gösterilir. Yeni iş emri dialogu müşteri seçenekleri yüklenene kadar boş kalır ve ilk kayıt geldiğinde otomatik seçer; bu sayede MUI select uyarıları ve sonsuz update döngüsü engellenir.
 - MyWorkOrders: teknisyenlere özel filtrelenmiş liste (atandığım iş emirleri, inline filtre/yenile)
 - Inspections:
   - list: iş emri/müşteri/ekipman/teknisyen/tarih/status/rapor durumları

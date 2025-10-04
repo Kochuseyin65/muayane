@@ -44,15 +44,15 @@ Bu belge, backend API uçlarını, izinlerini, tipik istek/yanıt örneklerini v
 - `PUT /offers/:id` (editOffer)
 - `POST /offers/:id/approve` (approveOffer)
 - `POST /offers/:id/send` (sendOffer)
-- `POST /offers/:id/convert-to-work-order` (createWorkOrder)
+- `POST /offers/:id/convert-to-work-order` (createWorkOrder) — `{ openingDate?, taskStartDate?, taskEndDate?, notes? }`
 - Public: `GET /offers/track/:token`, `POST /offers/track/:token/accept|decline`
 
 ## 7. Work Orders
 - `GET /work-orders?status=&search=&assignedTo=&customerCompanyId=&mine=&page=&limit=` (viewWorkOrders|viewMyWorkOrders)
   - `mine=true` veya sadece `viewMyWorkOrders` iznine sahip kullanıcılar için sonuçlar otomatik olarak giriş yapan teknisyenle sınırlandırılır.
 - `GET /work-orders/:id` (viewWorkOrders)
-- `POST /work-orders` (createWorkOrder)
-- `PUT /work-orders/:id` (editWorkOrder)
+- `POST /work-orders` (createWorkOrder) — `{ customerCompanyId, openingDate?, taskStartDate?, taskEndDate?, assignedTechnicians?, equipmentIds?, notes? }`
+- `PUT /work-orders/:id` (editWorkOrder) — `{ customerCompanyId?, openingDate?, taskStartDate?, taskEndDate?, notes? }`
 - `PUT /work-orders/:id/assign` (assignWorkOrder) — `{ technicianIds: number[] }`
 - `PUT /work-orders/:id/status` (updateWorkOrderStatus) — `{ status }`
 - `DELETE /work-orders/:id` (any(companyAdmin, editWorkOrder))

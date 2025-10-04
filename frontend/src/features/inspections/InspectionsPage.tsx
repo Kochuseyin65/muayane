@@ -29,12 +29,12 @@ export default function InspectionsPage() {
   const columns = [
     { id: 'inspection_number', label: 'Muayene No', render: (r: any) => <Button size="small" onClick={() => (window.location.href = `/inspections/${r.id}`)}>{r.inspection_number || '-'}</Button> },
     { id: 'work_order_number', label: 'İş Emri' },
-    { id: 'customer_name', label: 'Müşteri' },
+    { id: 'customer_name', label: 'Firma' },
     { id: 'equipment_name', label: 'Ekipman' },
-    { id: 'equipment_type', label: 'Tür' },
+    // { id: 'equipment_type', label: 'Tür' },
     { id: 'technician_name', label: 'Teknisyen', render: (r: any) => `${r.technician_name} ${r.technician_surname}` },
     { id: 'inspection_date', label: 'Tarih', render: (r: any) => r.inspection_date ? formatDate(r.inspection_date) : '-' },
-    { id: 'start_time', label: 'Saat', render: (r: any) => r.start_time ? `${r.start_time}${r.end_time ? ' - '+r.end_time : ''}` : '-' },
+    // { id: 'start_time', label: 'Saat', render: (r: any) => r.start_time ? `${r.start_time}${r.end_time ? ' - '+r.end_time : ''}` : '-' },
     { id: 'status', label: 'Durum', render: (r: any) => <Chip size="small" label={r.status} color={statusColor[r.status] || 'default'} /> },
     { id: 'report', label: 'Rapor', render: (r: any) => r.report_id ? (r.is_signed ? 'İmzalı' : 'İmzasız') : '-' },
   ]
@@ -49,14 +49,14 @@ export default function InspectionsPage() {
     <Box>
       <PageHeader title="Muayeneler">
         <Stack direction="row" spacing={1}>
-          <TextField size="small" placeholder="Ara" value={search} onChange={(e)=> setSearch(e.target.value)} />
-          <TextField size="small" select placeholder="Durum" value={status} onChange={(e)=> setStatus(e.target.value)}>
-            <MenuItem value="">Tümü</MenuItem>
-            {['not_started','in_progress','completed','approved'].map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+          <TextField size="small" placeholder="Ara" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <TextField size="small" select label="Durum" value={status} onChange={(e) => setStatus(e.target.value)} style={{ minWidth: 100 }}>
+            <MenuItem value="" >Tümü</MenuItem>
+            {['not_started', 'in_progress', 'completed', 'approved'].map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
           </TextField>
-          <TextField size="small" type="date" label="Başlangıç" InputLabelProps={{ shrink: true }} value={dateFrom} onChange={(e)=> setDateFrom(e.target.value)} />
-          <TextField size="small" type="date" label="Bitiş" InputLabelProps={{ shrink: true }} value={dateTo} onChange={(e)=> setDateTo(e.target.value)} />
-          <TextField size="small" placeholder="Tür" value={equipmentType} onChange={(e)=> setEquipmentType(e.target.value)} />
+          <TextField size="small" type="date" label="Başlangıç" InputLabelProps={{ shrink: true }} value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+          <TextField size="small" type="date" label="Bitiş" InputLabelProps={{ shrink: true }} value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+          <TextField size="small" placeholder="Tür" value={equipmentType} onChange={(e) => setEquipmentType(e.target.value)} />
         </Stack>
       </PageHeader>
       <DataTable

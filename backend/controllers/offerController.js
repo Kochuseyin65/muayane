@@ -618,9 +618,14 @@ const declineOfferByCustomer = async (req, res) => {
 const convertToWorkOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    const { scheduledDate, notes } = req.body;
+    const { openingDate, taskStartDate, taskEndDate, notes } = req.body;
     const companyId = req.user.company_id;
     const createdBy = req.user.id;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const openingDateValue = openingDate || today;
+    const taskStartDateValue = taskStartDate || null;
+    const taskEndDateValue = taskEndDate || null;
     
     // Check if offer exists and belongs to the same company
     const offerResult = await pool.query(
@@ -660,10 +665,20 @@ const convertToWorkOrder = async (req, res) => {
       
       // Create work order
       const workOrderResult = await client.query(
-        `INSERT INTO work_orders (company_id, work_order_number, customer_company_id, offer_id, scheduled_date, notes, created_by) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7) 
+        `INSERT INTO work_orders (company_id, work_order_number, customer_company_id, offer_id, opening_date, task_start_date, task_end_date, notes, created_by) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
          RETURNING *`,
-        [companyId, workOrderNumber, offer.customer_company_id, offer.id, scheduledDate || null, notes || null, createdBy]
+        [
+          companyId,
+          workOrderNumber,
+          offer.customer_company_id,
+          offer.id,
+          openingDateValue,
+          taskStartDateValue,
+          taskEndDateValue,
+          notes || null,
+          createdBy
+        ]
       );
       
       const workOrder = workOrderResult.rows[0];
@@ -693,7 +708,8 @@ const convertToWorkOrder = async (req, res) => {
       const items = offer.items;
       for (const item of items) {
         for (let i = 0; i < item.quantity; i++) {
-          const freeDate = await findFreeDate(createdBy, scheduledDate);
+          const preferredDate = taskStartDateValue || openingDateValue;
+          const freeDate = await findFreeDate(createdBy, preferredDate);
           await client.query(
             `INSERT INTO inspections (work_order_id, equipment_id, technician_id, inspection_date, start_time, end_time, inspection_data, inspection_number) 
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
@@ -852,10 +868,25 @@ const updateOfferValidation = [
 ];
 
 const convertToWorkOrderValidation = [
-  body('scheduledDate')
+  body('openingDate')
     .optional()
     .isISO8601()
-    .withMessage('Geçerli bir tarih formatı kullanınız'),
+    .withMessage('Geçerli bir açılış tarihi formatı kullanınız'),
+  body('taskStartDate')
+    .optional()
+    .isISO8601()
+    .withMessage('Geçerli bir görev başlangıç tarihi formatı kullanınız'),
+  body('taskEndDate')
+    .optional()
+    .isISO8601()
+    .withMessage('Geçerli bir görev bitiş tarihi formatı kullanınız')
+    .custom((value, { req }) => {
+      if (!value || !req.body.taskStartDate) return true;
+      if (new Date(value) < new Date(req.body.taskStartDate)) {
+        throw new Error('Görev bitiş tarihi başlangıç tarihinden önce olamaz');
+      }
+      return true;
+    }),
   body('notes')
     .optional()
     .trim()

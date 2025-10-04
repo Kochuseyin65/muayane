@@ -21,7 +21,7 @@ router.get('/profile',
 router.get('/:id', 
   authMiddleware, 
   requirePermission('companyAdmin'), 
-  companyController.getCompany
+  companyController.getCompany  
 );
 
 // POST /api/companies - Create new company (Super Admin only)

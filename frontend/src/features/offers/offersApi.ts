@@ -58,7 +58,7 @@ export const offersApi = baseApi.injectEndpoints({
       query: (id) => ({ url: `/offers/${id}/send`, method: 'POST' }),
       invalidatesTags: (_r, _e, id) => [{ type: 'Offers', id }, { type: 'Offers', id: 'LIST' }],
     }),
-    convertToWorkOrder: b.mutation<{ success: boolean; data: any; message?: string }, { id: number; scheduledDate?: string; notes?: string }>({
+    convertToWorkOrder: b.mutation<{ success: boolean; data: any; message?: string }, { id: number; openingDate?: string; taskStartDate?: string; taskEndDate?: string; notes?: string }>({
       query: ({ id, ...body }) => ({ url: `/offers/${id}/convert-to-work-order`, method: 'POST', body }),
       invalidatesTags: [{ type: 'Offers', id: 'LIST' }, { type: 'WorkOrders', id: 'LIST' }],
     }),
@@ -66,4 +66,3 @@ export const offersApi = baseApi.injectEndpoints({
 })
 
 export const { useListOffersQuery, useLazyListOffersQuery, useGetOfferQuery, useCreateOfferMutation, useUpdateOfferMutation, useDeleteOfferMutation, useApproveOfferMutation, useSendOfferMutation, useConvertToWorkOrderMutation } = offersApi
-

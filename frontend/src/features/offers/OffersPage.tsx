@@ -194,16 +194,37 @@ function OfferDialog({ open, onClose, onSave, offer }: { open: boolean; onClose:
   )
 }
 
-function ConvertDialog({ open, onClose, onSave, offer }: { open: boolean; onClose: () => void; onSave: (payload: { scheduledDate?: string; notes?: string }) => void; offer: Offer }) {
-  const [scheduledDate, setScheduledDate] = useState<string>('')
+function ConvertDialog({ open, onClose, onSave, offer }: { open: boolean; onClose: () => void; onSave: (payload: { openingDate?: string; taskStartDate?: string; taskEndDate?: string; notes?: string }) => void; offer: Offer }) {
+  const today = new Date().toISOString().slice(0, 10)
+  const initialOpening = offer?.created_at ? offer.created_at.slice(0, 10) : today
+  const [openingDate, setOpeningDate] = useState<string>(initialOpening)
+  const [taskStartDate, setTaskStartDate] = useState<string>('')
+  const [taskEndDate, setTaskEndDate] = useState<string>('')
   const [notes, setNotes] = useState<string>('')
-  const submit = () => onSave({ scheduledDate: scheduledDate || undefined, notes: notes || undefined })
+
+  useEffect(() => {
+    if (open) {
+      setOpeningDate(initialOpening)
+      setTaskStartDate('')
+      setTaskEndDate('')
+      setNotes('')
+    }
+  }, [open, initialOpening])
+
+  const submit = () => onSave({
+    openingDate: openingDate || undefined,
+    taskStartDate: taskStartDate || undefined,
+    taskEndDate: taskEndDate || undefined,
+    notes: notes || undefined,
+  })
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>İş Emrine Dönüştür</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
-          <TextField type="date" label="Planlanan Tarih" InputLabelProps={{ shrink: true }} value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)} />
+          <TextField type="date" label="Açılış Tarihi" InputLabelProps={{ shrink: true }} value={openingDate} onChange={(e) => setOpeningDate(e.target.value)} />
+          <TextField type="date" label="Görev Başlangıç Tarihi" InputLabelProps={{ shrink: true }} value={taskStartDate} onChange={(e) => setTaskStartDate(e.target.value)} />
+          <TextField type="date" label="Görev Bitiş Tarihi" InputLabelProps={{ shrink: true }} value={taskEndDate} onChange={(e) => setTaskEndDate(e.target.value)} />
           <TextField label="Notlar" value={notes} onChange={(e) => setNotes(e.target.value)} multiline minRows={3} />
         </Stack>
       </DialogContent>

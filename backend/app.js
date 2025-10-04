@@ -16,7 +16,9 @@ const defaultCorsOrigins = [
   'http://213.142.151.93:5174', // Frontend public (5174)
   'http://213.142.151.93:5173', // Frontend public (5173)
   'http://localhost:5174',      // Lokal geliştirme (5174)
-  'http://localhost:5173'       // Lokal geliştirme varsayılan Vite portu
+  'http://localhost:5173',      // Lokal geliştirme varsayılan Vite portu
+  'http://193.35.154.161:5174', // Yeni public frontend (5174)
+  'http://193.35.154.161:5173'  // Yeni public frontend (5173)
 ];
 const allowedCorsOrigins = (process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',')

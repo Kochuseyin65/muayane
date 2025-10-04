@@ -232,9 +232,14 @@ const createWorkOrder = async (req, res) => {
       });
     }
     
-    const { customerCompanyId, assignedTechnicians, scheduledDate, equipmentIds, notes } = req.body;
+    const { customerCompanyId, assignedTechnicians, openingDate, taskStartDate, taskEndDate, equipmentIds, notes } = req.body;
     const companyId = req.user.company_id;
     const createdBy = req.user.id;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const openingDateValue = openingDate || today;
+    const taskStartDateValue = taskStartDate || null;
+    const taskEndDateValue = taskEndDate || null;
     
     // Verify customer company belongs to the same company
     const customerCheck = await pool.query(
@@ -298,10 +303,19 @@ const createWorkOrder = async (req, res) => {
       
       // Create work order
       const workOrderResult = await client.query(
-        `INSERT INTO work_orders (company_id, work_order_number, customer_company_id, scheduled_date, notes, created_by) 
-         VALUES ($1, $2, $3, $4, $5, $6) 
+        `INSERT INTO work_orders (company_id, work_order_number, customer_company_id, opening_date, task_start_date, task_end_date, notes, created_by) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
          RETURNING *`,
-        [companyId, workOrderNumber, customerCompanyId, scheduledDate || null, notes || null, createdBy]
+        [
+          companyId,
+          workOrderNumber,
+          customerCompanyId,
+          openingDateValue,
+          taskStartDateValue,
+          taskEndDateValue,
+          notes || null,
+          createdBy
+        ]
       );
       
       const workOrder = workOrderResult.rows[0];
@@ -330,7 +344,7 @@ const createWorkOrder = async (req, res) => {
               workOrder.id, 
               equipmentId, 
               defaultTechnician,
-              scheduledDate || new Date(),
+              taskStartDateValue || openingDateValue || today,
               '09:00',
               '17:00',
               JSON.stringify({}),
@@ -381,12 +395,13 @@ const updateWorkOrder = async (req, res) => {
     }
     
     const { id } = req.params;
-    const { customerCompanyId, scheduledDate, notes } = req.body;
+    const { customerCompanyId, openingDate, taskStartDate, taskEndDate, notes } = req.body;
     const companyId = req.user.company_id;
-    
+
     // Check if work order exists and belongs to the same company
     const existingWorkOrder = await pool.query(
-      'SELECT id, status FROM work_orders WHERE id = $1 AND company_id = $2',
+      `SELECT id, status, customer_company_id, opening_date, task_start_date, task_end_date, notes 
+       FROM work_orders WHERE id = $1 AND company_id = $2`,
       [id, companyId]
     );
     
@@ -411,12 +426,43 @@ const updateWorkOrder = async (req, res) => {
       });
     }
     
+    const current = existingWorkOrder.rows[0];
+
+    const updatedCustomerCompanyId = customerCompanyId ?? current.customer_company_id;
+    const updatedOpeningDate = openingDate ?? current.opening_date ?? new Date().toISOString().slice(0, 10);
+    const updatedTaskStartDate = taskStartDate === undefined ? current.task_start_date : (taskStartDate || null);
+    const updatedTaskEndDate = taskEndDate === undefined ? current.task_end_date : (taskEndDate || null);
+    const updatedNotes = notes === undefined ? current.notes : (notes || null);
+
+    if (updatedTaskEndDate && updatedTaskStartDate && new Date(updatedTaskEndDate) < new Date(updatedTaskStartDate)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Görev bitiş tarihi başlangıç tarihinden önce olamaz'
+        }
+      });
+    }
+
     const result = await pool.query(
       `UPDATE work_orders 
-       SET customer_company_id = $1, scheduled_date = $2, notes = $3
-       WHERE id = $4 AND company_id = $5
+       SET customer_company_id = $1,
+           opening_date = $2,
+           task_start_date = $3,
+           task_end_date = $4,
+           notes = $5,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $6 AND company_id = $7
        RETURNING *`,
-      [customerCompanyId, scheduledDate || null, notes || null, id, companyId]
+      [
+        updatedCustomerCompanyId,
+        updatedOpeningDate,
+        updatedTaskStartDate,
+        updatedTaskEndDate,
+        updatedNotes,
+        id,
+        companyId
+      ]
     );
     
     res.json({
@@ -743,10 +789,25 @@ const createWorkOrderValidation = [
     .optional()
     .isInt({ min: 1 })
     .withMessage('Geçerli teknisyen ID\'leri gereklidir'),
-  body('scheduledDate')
+  body('openingDate')
     .optional()
     .isISO8601()
-    .withMessage('Geçerli bir tarih formatı kullanınız'),
+    .withMessage('Geçerli bir açılış tarihi formatı kullanınız'),
+  body('taskStartDate')
+    .optional()
+    .isISO8601()
+    .withMessage('Geçerli bir görev başlangıç tarihi formatı kullanınız'),
+  body('taskEndDate')
+    .optional()
+    .isISO8601()
+    .withMessage('Geçerli bir görev bitiş tarihi formatı kullanınız')
+    .custom((value, { req }) => {
+      if (!value || !req.body.taskStartDate) return true;
+      if (new Date(value) < new Date(req.body.taskStartDate)) {
+        throw new Error('Görev bitiş tarihi başlangıç tarihinden önce olamaz');
+      }
+      return true;
+    }),
   body('equipmentIds')
     .optional()
     .isArray()
@@ -767,10 +828,26 @@ const updateWorkOrderValidation = [
     .optional()
     .isInt({ min: 1 })
     .withMessage('Geçerli bir müşteri firma ID\'si gereklidir'),
-  body('scheduledDate')
+  body('openingDate')
     .optional()
     .isISO8601()
-    .withMessage('Geçerli bir tarih formatı kullanınız'),
+    .withMessage('Geçerli bir açılış tarihi formatı kullanınız'),
+  body('taskStartDate')
+    .optional()
+    .isISO8601()
+    .withMessage('Geçerli bir görev başlangıç tarihi formatı kullanınız'),
+  body('taskEndDate')
+    .optional()
+    .isISO8601()
+    .withMessage('Geçerli bir görev bitiş tarihi formatı kullanınız')
+    .custom((value, { req }) => {
+      if (!value) return true;
+      const start = req.body.taskStartDate;
+      if (start && new Date(value) < new Date(start)) {
+        throw new Error('Görev bitiş tarihi başlangıç tarihinden önce olamaz');
+      }
+      return true;
+    }),
   body('notes')
     .optional()
     .trim()

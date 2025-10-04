@@ -40,10 +40,10 @@ export default function MyInspectionsPage() {
       </Button>
     ) },
     { id: 'work_order_number', label: 'İş Emri' },
-    { id: 'customer_name', label: 'Müşteri' },
+    { id: 'customer_name', label: 'Firma' },
     { id: 'equipment_name', label: 'Ekipman' },
     { id: 'inspection_date', label: 'Tarih', render: (r: any) => r.inspection_date ? formatDate(r.inspection_date) : '-' },
-    { id: 'start_time', label: 'Saat', render: (r: any) => r.start_time ? `${r.start_time}${r.end_time ? ' - ' + r.end_time : ''}` : '-' },
+    // { id: 'start_time', label: 'Saat', render: (r: any) => r.start_time ? `${r.start_time}${r.end_time ? ' - ' + r.end_time : ''}` : '-' },
     { id: 'status', label: 'Durum', render: (r: any) => <Chip size="small" label={r.status} color={statusColor[r.status] || 'default'} /> },
     { id: 'report_state', label: 'Rapor', render: (r: any) => r.report_id ? (r.is_signed ? 'İmzalı' : 'İmzasız') : '-' },
   ]

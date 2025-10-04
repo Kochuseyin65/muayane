@@ -192,7 +192,10 @@ const getInspection = async (req, res) => {
     const result = await pool.query(
       `SELECT i.*, e.name as equipment_name, e.type as equipment_type, e.template,
               t.name as technician_name, t.surname as technician_surname,
-              wo.work_order_number, wo.scheduled_date as work_order_scheduled_date,
+              wo.work_order_number,
+              wo.opening_date as work_order_opening_date,
+              wo.task_start_date as work_order_task_start_date,
+              wo.task_end_date as work_order_task_end_date,
               cc.name as customer_name, cc.email as customer_email,
               r.id as report_id, r.unsigned_pdf_path, r.signed_pdf_path, 
               r.is_signed, r.signed_at, r.qr_token, r.report_style

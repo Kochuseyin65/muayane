@@ -36,11 +36,13 @@ export default function MyWorkOrdersPage() {
 
   const columns = [
     { id: 'work_order_number', label: 'İş Emri', render: (r: any) => <strong>{r.work_order_number}</strong> },
-    { id: 'customer_name', label: 'Müşteri' },
+    { id: 'customer_name', label: 'Firma' },
     { id: 'status', label: 'Durum', render: (r: any) => <Chip label={r.status} color={statusColor[r.status] || 'default'} size="small" /> },
     { id: 'inspection_count', label: 'Muayene', render: (r: any) => `${r.completed_inspections || 0}/${r.inspection_count || 0}` },
-    { id: 'scheduled_date', label: 'Planlanan Tarih', render: (r: any) => r.scheduled_date ? formatDate(r.scheduled_date) : '-' },
-    { id: 'created_at', label: 'Oluşturulma', render: (r: any) => r.created_at ? formatDateTime(r.created_at) : '-' },
+    { id: 'opening_date', label: 'Açılış', render: (r: any) => r.opening_date ? formatDate(r.opening_date) : '-' },
+    { id: 'task_start_date', label: 'Görev Başlangıç', render: (r: any) => r.task_start_date ? formatDate(r.task_start_date) : '-' },
+    { id: 'task_end_date', label: 'Görev Bitiş', render: (r: any) => r.task_end_date ? formatDate(r.task_end_date) : '-' },
+    // { id: 'created_at', label: 'Oluşturulma', render: (r: any) => r.created_at ? formatDateTime(r.created_at) : '-' },
   ]
 
   const withActions = rows.map((row) => ({

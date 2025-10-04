@@ -13,7 +13,7 @@ Bu belge, PostgreSQL şemasını, tablo ve alanları, ilişkileri ve migrasyon s
 - `customer_companies(id, company_id→companies, name, tax_number, address, contact, email, authorized_person, timestamps)`
 - `equipment(id, company_id→companies, name, type, template JSONB, is_active, timestamps)`
 - `offers(id, company_id→companies, offer_number(unique), customer_company_id→customer_companies, status, items JSONB, notes, total_amount, tracking_token(unique), created_by→technicians, approved_by→technicians, approved_at/sent_at/viewed_at, timestamps)`
-- `work_orders(id, company_id→companies, work_order_number(unique), customer_company_id→customer_companies, offer_id→offers, status, scheduled_date, notes, created_by→technicians, timestamps)`
+- `work_orders(id, company_id→companies, work_order_number(unique), customer_company_id→customer_companies, offer_id→offers, status, opening_date, task_start_date, task_end_date, notes, created_by→technicians, timestamps)`
 - `work_order_assignments(id, work_order_id→work_orders, technician_id→technicians, assigned_at, UNIQUE(work_order_id, technician_id))`
 - `inspections(id, work_order_id→work_orders, equipment_id→equipment, technician_id→technicians, inspection_date, start_time, end_time, status, inspection_data JSONB, photo_urls JSONB, inspection_number(unique), timestamps)`
 - `reports(id, inspection_id→inspections, is_signed, signed_at, signed_by→technicians, qr_token(unique), sent_at, unsigned_pdf_path, signed_pdf_path, timestamps)`
@@ -33,12 +33,15 @@ Bu belge, PostgreSQL şemasını, tablo ve alanları, ilişkileri ve migrasyon s
 ## 5. Migrasyonlar
 - `001_create_tables.sql` başlangıç şeması.
 - `002_seed_data.sql` örnek veriler.
+- `003_add_offer_customer_decision.sql` — teklif public accept/decline izleme.
 - `004_create_report_jobs.sql` asenkron rapor işleri.
 - `005_reports_file_paths.sql` rapor dosya yolu alanları.
 - `006_drop_base64_columns.sql` — eski base64 sütunlar kaldırıldı.
 - `007_add_inspection_number.sql` — `inspection_number` eklendi, backfill, UNIQUE.
+- `008_add_report_style.sql` — rapor çıktı ölçeği/config alanı.
+- `009_update_work_order_dates.sql` — `scheduled_date` kaldırıldı, yerine `opening_date`, `task_start_date`, `task_end_date` eklendi.
 
-Seçimli migrasyon: `npm run migrate -- 007` veya `MIGRATE_ONLY=007 npm run migrate`.
+Seçimli migrasyon: `npm run migrate -- 009` (veya `MIGRATE_ONLY=009 npm run migrate`). Önceki sürümler için benzer şekilde `MIGRATE_ONLY=007` vb. kullanılabilir.
 
 ## 6. Örnek Sorgular
 ```

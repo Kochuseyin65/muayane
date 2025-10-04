@@ -41,10 +41,11 @@ Request → Router → Auth (JWT) → Permission → Controller → DB / Storage
 
 ### 3.4 Offers
 - CRUD + approve/send/convert-to-work-order.
-- `convert-to-work-order` işleminde iş emri ve muayeneler otomatik üretilir (INSP‑... numara verilir).
+- `convert-to-work-order` işleminde iş emri ve muayeneler otomatik üretilir (INSP‑... numara verilir). İsteğe bağlı olarak `openingDate`, `taskStartDate`, `taskEndDate` değerleri gönderilebilir; aksi hâlde açılış tarihi için `CURRENT_DATE` kullanılır.
 
 ### 3.5 Work Orders
 - CRUD + assign/status + ayrıntılı liste (assignedTechnicians, inspection sayıları).
+- Tarih alanları: `opening_date` (varsayılan: oluşturulma günü), `task_start_date`, `task_end_date`. Backend validasyonu bitiş tarihinin başlangıçtan erken olmasını engeller.
 - Durum kuralları (completed→approved→sent). Tamamlanmamış muayene varken completed yapılamaz.
 
 ### 3.6 Inspections
@@ -100,6 +101,7 @@ Request → Router → Auth (JWT) → Permission → Controller → DB / Storage
 
 ## 9. Değişiklikler ve Migrasyonlar
 - 007_add_inspection_number.sql: `inspections.inspection_number` (benzersiz) eklendi, backfill ve unique kısıt.
+- 009_update_work_order_dates.sql: `scheduled_date` yerine `opening_date`, `task_start_date`, `task_end_date` kolonları eklendi; mevcut veriler taşındı.
 - `migrate.js` tek migrasyon veya belirli bir eşikten çalıştırılabilir (MIGRATE_ONLY / MIGRATE_FROM veya CLI argümanı).
 
 ## 10. Genişletme Önerileri
